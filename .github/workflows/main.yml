@@ -1,1 +1,58 @@
+name: GitHub Actions CI
 
+on:
+  push:
+    branch: [ master ]
+
+jobs:
+  build:
+    name: GitOps Workflow
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # イメージビルド
+      - name: Build an images from Dockerfile
+        run: |
+          # Dockerビルド
+          DOCKER_BUILDKIT=1 docker image build . -f app/Dockerfile --tag ${{ secrets.DOCKER_USERNAME }}
+      # trivyによるイメージビルド
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: '${{ secrets.DOCKER_USERNAME }}/gitops-go-app:${{ github.run_number }}'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
+
+      # コンテナイメージをDocker Hubにプッシュ
+      - name: Push image to Docker Hub
+        run: |
+          # Docker Hubログイン
+          docker login docker.io --username ${{ secrets.DOCKER_USERNAME }} --password ${{ secrets.DOCKER_PASSWORD }}
+          # イメージプッシュ
+          docker image push ${{ secrets.DOCKER_USERNAME }}/gitops-go-app:${{ github.run_number }}
+
+      # values.yamlの「更新、新規ブランチ作成、プッシュ、プルリクエスト
+      - name: Update values.yaml & Pull Request to Config Repository
+        run: |
+          # GIHUBログイン
+          echo -e "machine github.com\nlogin ${{ secrets.GIT_USERNAME }}\npassword ${{ secrets.GIT_PASSWORD }}" > ~/.netrc
+          # configリポジトリからクローン
+          git clone https://github.com/${{ secrets.GIT_USERNAME }}/config-yuta.git
+          # values.yamlファイルの更新処理
+          cd config-yuta/gitops-helm
+          git config --global user.email "${{ secrets.EMAIL }}"
+          git config --global user.name "${{ secrets.GIT_USERNAME}}"
+          # values.yamlのタグ番号を更新
+          sed -i 's/tag: [0-9]*/tag: ${{ github.run_number }}/g' values.yaml
+          # プッシュ処理
+          git add values.yaml
+          git commit -m "Update tag ${{ github.run_number }}"
+          git push origin feature/${{ github.run_number }}
+          # プルリクエスト処理
+          echo ${{ secrets.PERSONAL_ACCESS_TOKEN }} > token.txt
+          gh auth login --with-token < token.txt
+          gh pr create --title "Update Tag ${{ github.run_number }}" --body "Please Merge!!"
