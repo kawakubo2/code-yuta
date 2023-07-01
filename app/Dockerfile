@@ -1,7 +1,7 @@
 # State-1
 FROM golang:1.16 as builder
 COPY ./app/main.go ./
-RUN go build -o /gitopts-go-app ./main.go
+RUN go build -o /gitops-go-app ./main.go
 
 # State-2
 FROM gcr.io/distroless/base
