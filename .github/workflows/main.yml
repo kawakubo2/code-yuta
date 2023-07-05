@@ -35,7 +35,7 @@ jobs:
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
       # イメージプッシュ
       - name: Push image to Docker Hub
-        run |
+        run: |
           docker image push ${{ secrets.DOCKER_USERNAME }}/gitops:${{ github.run_number }} 
 
       # values.yamlの「更新、新規ブランチ作成、プッシュ、プルリクエスト
