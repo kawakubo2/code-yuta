@@ -49,6 +49,9 @@ jobs:
           cd config-yuta/gitops-helm
           git config --global user.email "${{ secrets.EMAIL }}"
           git config --global user.name "${{ secrets.GIT_USERNAME}}"
+          # 新規ブランチ作成
+          git branch feature/${{ github.run_number }}
+          git checkout feature/${{ github.run_number }}
           # values.yamlのタグ番号を更新
           sed -i 's/tag: [0-9]*/tag: ${{ github.run_number }}/g' values.yaml
           # プッシュ処理
