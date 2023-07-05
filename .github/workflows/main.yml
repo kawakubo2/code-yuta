@@ -36,7 +36,7 @@ jobs:
       # イメージプッシュ
       - name: Push image to Docker Hub
         run: |
-          docker image push ${{ secrets.DOCKER_USERNAME }}/gitops:${{ github.run_number }} 
+          docker image push ${{ secrets.DOCKER_USERNAME }}/gitops-go-app:${{ github.run_number }} 
 
       # values.yamlの「更新、新規ブランチ作成、プッシュ、プルリクエスト
       - name: Update values.yaml & Pull Request to Config Repository
