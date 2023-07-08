@@ -44,7 +44,7 @@ jobs:
           # GIHUBログイン
           echo -e "machine github.com\nlogin ${{ secrets.GIT_USERNAME }}\npassword ${{ secrets.GIT_PASSWORD }}" > ~/.netrc
           # configリポジトリからクローン
-          git clone https://${{ secrets.GIT_USERNAME }}:${{ secrets.PERSONAL_ACCESS__TOKEN}}@github.com/config-yuta.git
+          git clone https://${{ secrets.GIT_USERNAME }}:${{ secrets.PERSONAL_ACCESS_TOKEN}}@github.com/config-yuta.git
           # values.yamlファイルの更新処理
           cd config-yuta/gitops-helm
           git config --global user.email "${{ secrets.EMAIL }}"
